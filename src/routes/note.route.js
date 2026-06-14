@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createNoteController,
+  deleteNoteController,
   getNoteByIDController,
   getNotesController,
   updateDescriptionController,
@@ -36,4 +37,10 @@ router.get("/notes/:id", getNoteByIDController);
  */
 router.patch("/notes/:id", updateDescriptionController);
 
+/**
+ * @route DELETE api/notes/:id
+ * @description Delete note by ID
+ * @access Public
+ */
+router.delete("/notes/:id", deleteNoteController);
 export default router;

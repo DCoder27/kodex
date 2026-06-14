@@ -82,6 +82,7 @@ const updateDescriptionController = async (req, res) => {
 
     /* -------- Find the note by ID ---- */
     const note = await NoteModel.findById(id);
+    /* -------- If note not found ---- */
     if (!note)
       return res.status(404).json({
         message: "Note not found",
@@ -103,9 +104,37 @@ const updateDescriptionController = async (req, res) => {
   }
 };
 
+const deleteNoteController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    /* -------- Find the note by ID ---- */
+    const note = await NoteModel.findById(id);
+
+    /* -------- If note not found ---- */
+    if (!note)
+      return res.status(404).json({
+        message: "Not not found",
+      });
+
+    /* -------- Delete the note ---- */
+    await NoteModel.findByIdAndDelete(id);
+
+    /* -------- Return the deleted note ---- */
+    return res.status(200).json({
+      message: "Note deleted sucessfully",
+      Note: note,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
 export {
   createNoteController,
   getNotesController,
   getNoteByIDController,
   updateDescriptionController,
+  deleteNoteController
 };
