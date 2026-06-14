@@ -35,8 +35,8 @@ const getNotesController = async (req, res) => {
   try {
     const notes = await NoteModel.find();
     return res.status(200).json({
-        message: "Notes retrieved successfully",
-        Notes: notes,
+      message: "Notes retrieved successfully",
+      Notes: notes,
     });
   } catch (error) {
     return res.status(500).json({
@@ -45,4 +45,23 @@ const getNotesController = async (req, res) => {
   }
 };
 
-export { createNoteController, getNotesController };
+const getNoteByIDController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const note = await NoteModel.findById(id);
+    if (!note)
+      return res.status(404).json({
+        message: "Note not found",
+      });
+    return res.status(200).json({
+      message: "Note retrieved successfully",
+      Note: note,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export { createNoteController, getNotesController, getNoteByIDController };
