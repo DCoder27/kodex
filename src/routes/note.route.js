@@ -1,5 +1,5 @@
 import express from "express";
-import noteController from "../controllers/note.controller.js";
+import { createNoteController, getNotesController } from "../controllers/note.controller.js";
 
 const router = express.Router();
 
@@ -9,6 +9,8 @@ const router = express.Router();
  * @access Public
  */
 
-router.post('/notes',noteController)
+router.post('/notes', createNoteController);
+
+router.get('/notes', getNotesController)
 
 export default router;

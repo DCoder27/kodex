@@ -1,6 +1,6 @@
 import NoteModel from "../models/note.model.js";
 
-const noteController = async (req, res) => {
+const createNoteController = async (req, res) => {
   try {
     const { title, description } = req.body;
 
@@ -30,4 +30,19 @@ const noteController = async (req, res) => {
     });
   }
 };
-export default noteController;
+
+const getNotesController = async (req, res) => {
+  try {
+    const notes = await NoteModel.find();
+    return res.status(200).json({
+        message: "Notes retrieved successfully",
+        Notes: notes,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export { createNoteController, getNotesController };
