@@ -1,8 +1,15 @@
 import NoteModel from "../models/note.model.js";
+import { verifyToken } from "../utils/verifyToken.js";
 
 const createNoteController = async (req, res) => {
   try {
+    // Getting title and description from body
     const { title, description } = req.body;
+
+    // Verify the token and set the user in the request object
+    const { token } = req.cookies;
+    const verifiedToken = verifyToken(token);
+    req.user = verifiedToken;
 
     /* -------- Validation for title and description ---- */
     if (!title || !description) {
@@ -11,6 +18,7 @@ const createNoteController = async (req, res) => {
       });
     }
 
+    // Validation for title and description length
     if (title.trim().length < 3 || description.trim().length < 10) {
       return res.status(400).json({
         message:
@@ -18,13 +26,20 @@ const createNoteController = async (req, res) => {
       });
     }
 
-    const newNote = await NoteModel.create({ title, description });
+    // Create a new note with the authenticated user's ID
+    const newNote = await NoteModel.create({
+      title,
+      description,
+      userId: req.user.userID,
+    });
 
+    // Return the created note in the response
     return res.status(201).json({
       message: "Note created successfully",
       note: newNote,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal Server Error",
     });
@@ -33,7 +48,15 @@ const createNoteController = async (req, res) => {
 
 const getNotesController = async (req, res) => {
   try {
-    const notes = await NoteModel.find();
+    // Verify the token and set the user in the request object
+    const { token } = req.cookies;
+    const verifiedToken = verifyToken(token);
+    req.user = verifiedToken;
+
+    // Get all notes for the authenticated user
+    const notes = await NoteModel.find({ userId: req.user.userID });
+
+    // Return the notes in the response
     return res.status(200).json({
       message: "Notes retrieved successfully",
       Notes: notes,
@@ -47,17 +70,30 @@ const getNotesController = async (req, res) => {
 
 const getNoteByIDController = async (req, res) => {
   try {
+    // Verify the token and set the user in the request object
+    const { token } = req.cookies;
+    const verifiedToken = verifyToken(token);
+    req.user = verifiedToken;
+
+    // Getting id from params
     const { id } = req.params;
-    const note = await NoteModel.findById(id);
+
+    // Find the note by ID and user ID
+    const note = await NoteModel.findOne({ _id: id, userId: req.user.userID });
+    
+    // If note not found return 404
     if (!note)
       return res.status(404).json({
         message: "Note not found",
       });
+
+      // Return the note in the response
     return res.status(200).json({
       message: "Note retrieved successfully",
       Note: note,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal Server Error",
     });
@@ -66,8 +102,14 @@ const getNoteByIDController = async (req, res) => {
 
 const updateDescriptionController = async (req, res) => {
   try {
+    // Getting id from params and description from body
     const { id } = req.params;
     const { description } = req.body;
+
+    // Verify the token and set the user in the request object
+    const { token } = req.cookies;
+    const verifiedToken = verifyToken(token);
+    req.user = verifiedToken;
 
     /* -------- Validation for description ---- */
     if (!description) {
@@ -81,7 +123,8 @@ const updateDescriptionController = async (req, res) => {
       });
 
     /* -------- Find the note by ID ---- */
-    const note = await NoteModel.findById(id);
+    const note = await NoteModel.findOne({ _id: id, userId: req.user.userID });
+    
     /* -------- If note not found ---- */
     if (!note)
       return res.status(404).json({
@@ -106,15 +149,21 @@ const updateDescriptionController = async (req, res) => {
 
 const deleteNoteController = async (req, res) => {
   try {
+    // Getting id from params
     const { id } = req.params;
 
+    // Verify the token and set the user in the request object
+    const { token } = req.cookies;
+    const verifiedToken = verifyToken(token);
+    req.user = verifiedToken;
+
     /* -------- Find the note by ID ---- */
-    const note = await NoteModel.findById(id);
+    const note = await NoteModel.findOne({ _id: id, userId: req.user.userID });
 
     /* -------- If note not found ---- */
     if (!note)
       return res.status(404).json({
-        message: "Not not found",
+        message: "Note not found",
       });
 
     /* -------- Delete the note ---- */
@@ -136,5 +185,5 @@ export {
   getNotesController,
   getNoteByIDController,
   updateDescriptionController,
-  deleteNoteController
+  deleteNoteController,
 };

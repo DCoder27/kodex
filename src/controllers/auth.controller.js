@@ -1,6 +1,5 @@
 import UserModel from "../models/user.model.js";
 import { generateToken } from "../utils/generateToken.js";
-import bcrypt from "bcrypt";
 import { verifyToken } from "../utils/verifyToken.js";
 
 /* -------- Controller for User Registration --------- */
@@ -21,14 +20,12 @@ const registerController = async (req, res) => {
       return res.status(409).json({
         message: "User with this email aready exists",
       });
-    /* -------- Hash the password ---- */
-    const hashPassword = await bcrypt.hash(password, 10);
 
     /* -------- Create new user and generate token ---- */
     const newUser = await UserModel.create({
       name,
       email,
-      password: hashPassword,
+      password,
     });
     const token = generateToken(newUser._id);
 
@@ -58,6 +55,7 @@ const loginController = async (req, res) => {
         message: "Email and password are required",
       });
     }
+
     /* -------- Check if user exists ---- */
     const existingUser = await UserModel.findOne({ email });
 
@@ -69,10 +67,7 @@ const loginController = async (req, res) => {
     }
 
     /* -------- Compare password with hashed password ---- */
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      existingUser.password,
-    );
+    const isPasswordValid = await existingUser.comparedPassword(password);
 
     /* -------- If password is invalid, send unauthorized response ---- */
     if (!isPasswordValid)

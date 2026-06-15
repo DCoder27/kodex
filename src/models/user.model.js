@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
+import bcrypt, { hashSync } from "bcryptjs";
 
+// User Schema
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -9,6 +11,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      unique: true,
       required: true,
       lowercase: true,
       trim: true,
@@ -23,5 +26,16 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-const UserModel = mongoose.model("Users", userSchema);
+// Hash the password before saving the user document
+userSchema.pre("save", function () {
+  this.password = hashSync(this.password, 10);
+});
+
+// Method to compare the provided password with the hashed password in the database
+userSchema.methods.comparedPassword = function (password) {
+  return bcrypt.compareSync(password, this.password);
+};
+
+//create user model
+const UserModel = mongoose.model("users", userSchema);
 export default UserModel;
